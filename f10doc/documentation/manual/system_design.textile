@@ -1,0 +1,28 @@
+h1. 系统设计
+
+h2. 功能描述
+
+提供f10功能的web展示. 目前是要开放给nt项目和QIC项目使用.
+系统设计要求能对用户的请求快速响应, 同时撑住大量用户的请求.
+
+p(note).
+这个项目不做多浏览器的测试,原则上我们只会在封装的webkit内核的浏览器上做开发. 同时在开发前端页面的过程中,尽可能的考虑使用该webkit支持的html5跟css3的特性
+
+h2. 项目架构
+
+采用把页面展示部分与数据计算部分分离开来, 中间采用redis存储计算好的数据. 同时保证web这部分是无状态的, 这样可以保证水平扩展可通过增加机器即可.
+以下是项目架构图
+
+<a class="bigPic" href="images/f10_architecture" target="_blank">!images/f10_architecture!</a>
+
+h2. 项目代码说明
+
+按上面的架构图,可分为处理web渲染展示(f10), 后端接数据库(或api)生成计算好的数据存入redis, 后端还包括一些定时任务调度去处理相关数据.
+
+||模块说明||svn地址||
+|web渲染展示|http://192.168.100.192:8080/svn/QUICK/Quick/1.Quick/13.Code Management/Trunk/Web/Trunk/f10|
+|f10文档说明|http://192.168.100.192:8080/svn/QUICK/Quick/1.Quick/13.Code Management/Trunk/Web/Trunk/f10doc|
+|f10后端数据生成|http://192.168.100.192:8080/svn/QUICK/Quick/1.Quick/13.Code Management/Trunk/Web/Trunk/f10calculate|
+
+说明: web前端这个会用 playframework 进行开发. 同时还会使用到play的 play-redis 插件.
+请注意 项目里的 conf/dependencies.yml 文件里引用play-redis插件, 和 f10doc 文档插件.

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>初使化数据</comment>
+    <!--股票数据-->
+    <entry key="stock_info_init">
+<![CDATA[
+/*股票基本数据*/
+SELECT
+  a.`SECURITYID` AS secId,
+  a.`SYMBOL` AS `scode`,
+  a.`SHORTNAME` AS `name`,
+  a.`EXCHANGECODE` AS market,
+  a.`INSTITUTIONID` AS institutionId,
+  a.SHARETYPE AS shareType
+FROM
+  `stk_stockinfo` a
+WHERE a.STATUSID IN ('P0801','P0804','P0805','P0806','P0807','P0808','P0809','P0810','P0811','P0812','P0899')
+	AND DELISTEDDATE IS NULL
+ORDER BY INSTITUTIONID, SHARETYPE
+]]>
+    </entry>
+
+    <!-- 全部股票信息 -->
+    <entry key="allStockInfo">
+        <![CDATA[
+SELECT
+  a.SYMBOL AS scode,
+  a.SHORTNAME AS name
+from stk_stockinfo a
+where a.SYMBOL is not null
+                ]]>
+    </entry>
+
+    <!--公司与行业对应关系-->
+    <entry key="institutionId2industryCode">
+<![CDATA[
+/*公司与行业对应关系*/
+SELECT
+	k.institutionId, k.industryCode
+FROM stk_industryclass k
+	INNER JOIN
+	(
+		SELECT INSTITUTIONID, MAX(CHANGEDATE) AS CHANGEDATE
+		FROM stk_industryclass
+		WHERE INDUSTRYCLASSIFICATIONID = 'P0207'
+		GROUP BY INSTITUTIONID
+	) AS v
+	ON k.`INSTITUTIONID` = v.INSTITUTIONID AND k.CHANGEDATE = v.CHANGEDATE
+WHERE k.INDUSTRYCLASSIFICATIONID='P0207'
+]]>
+    </entry>
+
+    <!--行业代码与名称-->
+    <entry key="induCodeName">
+        <![CDATA[
+/*行业名称*/
+SELECT a.industrycode, a.industryname FROM pub_indclassifysets a WHERE  a.INDCLASSIFYSYSTEMCODE='P0207' AND a.industryCode IN (#codeList#)
+                ]]>
+    </entry>
+
+    <!--指数数据-->
+    <entry key="index_info">
+<![CDATA[
+SELECT
+	`SECURITYID` AS secId,
+	`SYMBOL` AS CODE,
+	`INDEXFULLNAME` AS 'name'
+FROM idx_indexinfo
+WHERE SYMBOL IN (#index_code#)
+]]>
+    </entry>
+
+    <!--
+    行业指数与股票对应关系
+    从 变化表里取. 取最新的那条, 且要求状态为进入的
+    -->
+    <entry key="indu_index_stock_relevance">
+<![CDATA[
+/*行业指数与股票对应关系*/
+SELECT SAMPLESECURITYCODE AS scode , SYMBOL AS indexCode
+FROM (
+	SELECT distA.*, FIND_IN_SET(distA.CHANGEDATE, rankData.smallList) AS RANK
+	FROM
+	(
+		SELECT SAMPLESECURITYCODE, SYMBOL, CHANGEDATE
+		FROM IDX_SampleChange
+		WHERE CHANGINGMETHODID = 'S2701'/*进入*/
+			AND SYMBOL IN (
+			'000004', '000005', '000006', '000007', '000008',
+			'399231', '399232', '399233', '399234', '399235', '399236',
+			'399327', '399328', '399239', '399240', '399241', '399242',
+			'399243', '399244', '399248', '399249'
+			)
+	) distA,
+
+	(
+		SELECT SAMPLESECURITYCODE, GROUP_CONCAT(CHANGEDATE ORDER BY CHANGEDATE DESC) AS smallList
+		FROM IDX_SampleChange
+		WHERE CHANGINGMETHODID = 'S2701'/*进入*/
+		AND SYMBOL IN (
+		'000004', '000005', '000006', '000007', '000008',
+        '399231', '399232', '399233', '399234', '399235', '399236',
+        '399327', '399328', '399239', '399240', '399241', '399242',
+        '399243', '399244', '399248', '399249'
+		)
+		GROUP BY SAMPLESECURITYCODE
+	) rankData
+
+	WHERE distA.SAMPLESECURITYCODE = rankData.SAMPLESECURITYCODE
+
+) ttt
+
+WHERE RANK = 1
+]]>
+    </entry>
+
+    <!--市场指数与股票对应关系-->
+    <entry key="marketIndex_stock_relevance">
+<![CDATA[
+/*市场指数与股票对应关系*/
+SELECT SAMPLESECURITYCODE AS scode , SYMBOL AS indexCode
+FROM (
+	SELECT distA.*, FIND_IN_SET(distA.CHANGEDATE, rankData.smallList) AS RANK
+	FROM
+	(
+		SELECT SAMPLESECURITYCODE, SYMBOL, CHANGEDATE
+		FROM IDX_SampleChange
+		WHERE CHANGINGMETHODID = 'S2701'/*进入*/
+			AND SYMBOL IN ( '000001','399001','399006','399005' )
+	) distA,
+
+	(
+		SELECT SAMPLESECURITYCODE, GROUP_CONCAT(CHANGEDATE ORDER BY CHANGEDATE DESC) AS smallList
+		FROM IDX_SampleChange
+		WHERE CHANGINGMETHODID = 'S2701'/*进入*/
+		AND SYMBOL IN ( '000001','399001','399006','399005' )
+		GROUP BY SAMPLESECURITYCODE
+	) rankData
+
+	WHERE distA.SAMPLESECURITYCODE = rankData.SAMPLESECURITYCODE
+
+) ttt
+
+WHERE RANK = 1
+]]>
+    </entry>
+
+    <!--返回有融资融券的secId-->
+    <entry key="allFinancingSecList">
+<![CDATA[
+    SELECT DISTINCT securityId AS secId FROM  SMT_TradeD
+]]>
+    </entry>
+</properties>

@@ -1,0 +1,14 @@
+h1. 新闻模块对外接口
+
+h2. 获取资讯类的前几条记录
+
+||项||说明||
+|url|/newsapict/toprecords|
+|http Method|GET|
+|url上的参数说明| |
+| | **n:** @int型@, 前n条记录 (n > 0 && n <= 20) |
+| | **type:** @int型@ 资讯类型. 1新闻, 2公告, 3研报 |
+|其它参数说明| 无 |
+| 成功 | 返回 **@JSON@** 类型, 如:  { "sucess": true, "data" : **json数组** 资讯数据.} <br/> 数组每项包含key值为:<br/> title : 标题 <br/> updatedate : 更新时间 <br/> guid : 新闻或者公告或者研报的id|
+| 失败 | 返回 **@JSON@** 类型, 如:  { "sucess": false, "message" : "**String** 失败提示信息" } |
+|举例| @/newsapict/toprecords?n=4&type=1@ 返回最新的4条新闻 |

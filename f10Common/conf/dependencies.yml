@@ -1,0 +1,4 @@
+self: play -> f10Common 0.1
+
+require:
+    - play

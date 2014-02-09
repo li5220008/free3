@@ -1,0 +1,5 @@
+# Default f10Common messages
+# You can specialize this file for each language.
+# For exemple, for french create a messages.fr file
+
+#f10Common.name=f10Common
